@@ -9,7 +9,10 @@
          (only-in racket/function curry)
          (only-in racket/match match))
 
-(provide configurable-ctc)
+(provide configurable-ctc
+         define/ctc-helper
+         define-syntax-rule/ctc-helper
+         define-syntax/ctc-helper)
 
 (define-for-syntax precision-configs '(none types max))
 ;; Must be a member of ^; modify to change all configurable-ctc precision levels
@@ -250,4 +253,15 @@
                     (tainted-map (curry + x-val) y))
                   x))
   (assert (foo5 x x)))
+
+
+(define-syntax-rule (define-ctc-helpers [ctc-helper-id expansion] ...)
+  (begin
+    (define-syntax ctc-helper-id (make-rename-transformer #'expansion))
+    ...))
+
+(define-ctc-helpers
+  [define/ctc-helper define]
+  [define-syntax-rule/ctc-helper define-syntax-rule]
+  [define-syntax/ctc-helper define-syntax])
 

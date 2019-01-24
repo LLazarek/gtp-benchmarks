@@ -36,8 +36,8 @@
 
 ;; =============================================================================
 
-(define array-coord? (vector/c index? index?))
-(define (arrayof val-ctc)
+(define/ctc-helper array-coord? (vector/c index? index?))
+(define/ctc-helper (arrayof val-ctc)
   (vectorof (vectorof val-ctc)))
 
 (define/contract (array-set! g p v)
@@ -57,15 +57,11 @@
               [f (array-coord? . -> . cell%?)])
              [result (arrayof cell%?)]
              #:post (p f result)
-             (for/fold ([good-so-far? #t])
-                       ([x (in-range (vector-ref p 0))])
-               (and good-so-far?
-                    (for/fold ([good-so-far? good-so-far?])
-                              ([y (in-range (vector-ref p 1))])
-                      (define xy (vector x y))
-                      (and good-so-far?
-                           (equal? (f xy)
-                                   (grid-ref result xy)))))))]
+             (for/and ([x (in-range (vector-ref p 0))])
+               (for/and ([y (in-range (vector-ref p 1))])
+                 (define xy (vector x y))
+                 (equal? (f xy)
+                         (grid-ref result xy)))))]
    [types (array-coord? (array-coord? . -> . cell%?) . -> . (arrayof cell%?))])
 
   (for/vector ([x (in-range (vector-ref p 0))])
@@ -75,7 +71,7 @@
 
 ;; a Grid is a math/array Mutable-Array of cell%
 ;; (mutability is required for dungeon generation)
-(define grid? (arrayof cell%?))
+(define/ctc-helper grid? (arrayof cell%?))
 
 ;; parses a list of strings into a grid, based on the printed representation
 ;; of each cell
@@ -138,7 +134,7 @@
   (and (<= 0 (vector-ref pos 0) (sub1 (grid-height g)))
        (<= 0 (vector-ref pos 1) (sub1 (grid-width  g)))))
 
-(define ((within-grid/c g) pos)
+(define/ctc-helper ((within-grid/c g) pos)
   (within-grid? g pos))
 
 
@@ -152,14 +148,15 @@
               (or-#f/c
                (and/c cell%?
                       (curry equal?
-                             (vector-ref (vector-ref g (vector-ref pos 0))
-                                         (vector-ref pos 1)))))])]
+                             (when (within-grid? g pos)
+                               (vector-ref (vector-ref g (vector-ref pos 0))
+                                           (vector-ref pos 1))))))])]
    [types (grid? array-coord? . -> . (or-#f/c cell%?))])
 
   (and (within-grid? g pos)
        (vector-ref (vector-ref g (vector-ref pos 0)) (vector-ref pos 1))))
 
-(define direction? (->* (array-coord?) [index?]
+(define/ctc-helper direction? (->* (array-coord?) [index?]
                         array-coord?))
 
 (define/contract (left pos [n 1])

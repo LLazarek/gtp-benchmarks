@@ -56,10 +56,10 @@
 
 ;; =============================================================================
 
-(define stackof listof)
-(define non-empty-stack? (and/c stack?
+(define/ctc-helper stackof listof)
+(define/ctc-helper non-empty-stack? (and/c stack?
                                 (not/c empty?)))
-(define stack-with-min-size/c list-with-min-size/c)
+(define/ctc-helper stack-with-min-size/c list-with-min-size/c)
 
 (define/contract (list->stack xs)
   (configurable-ctc

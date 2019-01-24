@@ -5,14 +5,14 @@
 
 
 (struct posn (x y))
-(define (posn-type? p)
+(define/ctc-helper (posn-type? p)
   (match p
     [(posn (? integer?) (? integer?)) #t]
     [_ #f]))
-(define ((posn=?/c p1) p2)
+(define/ctc-helper ((posn=?/c p1) p2)
   (and (= (posn-x p1) (posn-x p2))
        (= (posn-y p1) (posn-y p2))))
-(define ((posn/c x/c y/c) x)
+(define/ctc-helper ((posn/c x/c y/c) x)
   (match x
     ;; ll: the and/c's allow self-recognizing value ctcs to be used
     [(posn (? (and/c integer? x/c))
@@ -20,27 +20,27 @@
      #t]
     [_ #f]))
 
-(define snake-segs? (listof posn-type?))
-(define (snake-segs=?/c segs)
+(define/ctc-helper snake-segs? (listof posn-type?))
+(define/ctc-helper (snake-segs=?/c segs)
   (apply list/c (map posn=?/c segs)))
 
 ;; lltodo: I think this is wrong, should just be one
-(define food? posn-type?)
-(define food=?/c posn=?/c)
+(define/ctc-helper food? posn-type?)
+(define/ctc-helper food=?/c posn=?/c)
 
-(define snake-dir? (or/c "up"
+(define/ctc-helper snake-dir? (or/c "up"
                          "down"
                          "left"
                          "right"))
 (struct snake (dir segs))
 
-(define (snake-type? s)
+(define/ctc-helper (snake-type? s)
   (match s
     [(snake (? string?)
             (? snake-segs?)) #t]
     [_ #f]))
 
-(define ((snake/c dir/c segs/c) s)
+(define/ctc-helper ((snake/c dir/c segs/c) s)
   (match s
     [(snake (? (and/c snake-dir?
                       dir/c))
@@ -49,7 +49,7 @@
      #t]
     [_ #f]))
 
-(define ((snake=?/c s1) s2)
+(define/ctc-helper ((snake=?/c s1) s2)
   ;; lltodo: this doesn't work
   (match* (s1 s2)
     [((snake dir segs1)
@@ -59,12 +59,12 @@
 
 (struct world (snake food))
 
-(define ((world/c snake/c food/c) x)
+(define/ctc-helper ((world/c snake/c food/c) x)
   (match x
     [(world (? snake/c) (? food/c)) #t]
     [_ #f]))
 
-(define ((world=?/c w1) w2)
+(define/ctc-helper ((world=?/c w1) w2)
   (match* (w1 w2)
     [((world snake1 food1)
       (world snake2 food2))
@@ -72,7 +72,7 @@
           ((food=?/c food1) food2))]
     [(_ _) #f]))
 
-(define world-type? (world/c snake-type? food?))
+(define/ctc-helper world-type? (world/c snake-type? food?))
 
 (define/contract (posn=? p1 p2)
   (configurable-ctc

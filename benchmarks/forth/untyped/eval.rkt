@@ -97,12 +97,12 @@
       (forth-eval e s token*)])))
 
 
-(define ((listof/any-depth/c ctc) v)
+(define/ctc-helper ((listof/any-depth/c ctc) v)
   (if (list? v)
       (andmap (listof/any-depth/c ctc) v)
       (ctc v)))
 
-(define token*? (listof/any-depth/c (or/c symbol? number?)))
+(define/ctc-helper token*? (listof/any-depth/c (or/c symbol? number?)))
 
 (define/contract (forth-eval E S token*)
   (configurable-ctc
@@ -153,7 +153,7 @@
              [val (cons val (loop))])))))))
 
 
-(define (nested-singleton-list? v)
+(define/ctc-helper (nested-singleton-list? v)
   (and (list? v)
        (= (length v) 1)
        (list? (first v))))

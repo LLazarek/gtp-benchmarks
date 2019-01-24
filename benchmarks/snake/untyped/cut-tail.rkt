@@ -7,7 +7,7 @@
 ;; - (cons Posn empty)
 ;; - (cons Posn NeSegs)
 
-(define ne-segs? (and/c snake-segs? cons?))
+(define/ctc-helper ne-segs? (and/c snake-segs? cons?))
 
 ;; cut-tail : NeSegs -> Segs
 ;; Cut off the tail.

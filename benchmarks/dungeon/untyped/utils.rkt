@@ -22,7 +22,8 @@
 
 ;; =============================================================================
 
-(define orig
+(define/contract orig
+  any/c
   '(2 10 24 3 0 2 10 45 2 2 2 2 49 3 1 5 1 0 0 2 1 0 2 1 0 0 2 2 5 0 0 0 3 0 1 2
       0 3 0 0 2 2 0 2 2 0 0 3 0 0 2 0 3 1 0 2 0 0 1 1 0 2 0 0 3 0 0 1 2 0 3 1 0
       2 0 0 0 1 3 1 1 0 1 2 0 3 2 0 1 2 0 1 1 0 2 2 0 1 1 0 2 2 0 0 0 2 1 0 0 0 
@@ -31,7 +32,7 @@
       2 2 0 2 1 0 0 0 3 6 1 0 3 0 0 0 2 1 3 0 0 3 1 0 1 1 0 2 0 0 3 2 0 2 1 0 1
       2 0 0 3 0 2 2 0 2 2 0 2 2 0 1 1 0 3 1 0 2 1 0 1 2 0 0 2 0 3 1 0 1 1 0 2 2 
       0 2 2 0 1 5 3 3 2 1))
-(define r* (box orig))
+(define/contract r* any/c (box orig))
 
 (define/contract (reset!)
   (configurable-ctc
@@ -50,7 +51,7 @@
 
   (begin0 (car (unbox r*)) (set-box! r* (cdr (unbox r*)))))
 
-(define (list+titlecases . los)
+(define/ctc-helper (list+titlecases . los)
   (append los
           (map string-titlecase los)))
 
@@ -71,7 +72,7 @@
           (if capitalize? "A"  "a"))))
 
 
-(define (random-result-between/c min max)
+(define/ctc-helper (random-result-between/c min max)
   (and/c exact-nonnegative-integer?
          (>=/c min)
          (<=/c max)))

@@ -4,8 +4,7 @@
   forth-eval*
 ))
 (require (only-in racket/file file->lines)
-         (only-in "../../../ctcs/precision-config.rkt"
-                  configurable-ctc)
+         "../../../ctcs/precision-config.rkt"
          racket/contract
          (only-in racket/math natural?))
 
@@ -13,9 +12,9 @@
 
 (define/contract LOOPS
   (configurable-ctc
-   [max 10]
+   [max 1]
    [types natural?])
-  10)
+  1)
 
 (define/contract (main lines)
   (configurable-ctc

@@ -90,7 +90,7 @@
          (world-food w)))
 
 
-(define-syntax-rule (save-random-excursion generator body ...)
+(define-syntax-rule/ctc-helper (save-random-excursion generator body ...)
   (let ([generator-state (pseudo-random-generator->vector generator)])
     (begin0
         (begin body ...)

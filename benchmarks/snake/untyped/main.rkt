@@ -34,12 +34,14 @@
            (cdr h)))))
   (void))
 
-(define DATA (with-input-from-file "../base/snake-hist.rktd" read))
+(define/contract DATA
+  any/c
+  (with-input-from-file "../base/snake-hist.rktd" read))
 (define/contract LOOPS
   (configurable-ctc
-   [max (=/c 200)]
+   [max (=/c 1)]
    [types natural?])
-  200)
+  1)
 
 (define/contract (main hist)
   (configurable-ctc

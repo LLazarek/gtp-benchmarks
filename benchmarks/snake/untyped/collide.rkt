@@ -32,8 +32,8 @@
       (<= (posn-y p) 0)
       (>= (posn-y p) BOARD-HEIGHT)))
 
-(define (truthy->bool x) (if x #t #f))
-(define memf? (compose truthy->bool memf))
+(define/ctc-helper (truthy->bool x) (if x #t #f))
+(define/ctc-helper memf? (compose truthy->bool memf))
 
 ;; snake-self-collide? : Snake -> Boolean
 (define/contract (snake-self-collide? snk)

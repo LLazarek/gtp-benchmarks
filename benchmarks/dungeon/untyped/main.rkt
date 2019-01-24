@@ -73,7 +73,7 @@
 ;(define-type ExtPoints (Listof (Pairof Pos Room)))
 ;; dungeon generation
 
-(define (alistof key/c val/c)
+(define/ctc-helper (alistof key/c val/c)
   (listof (cons/c key/c val/c)))
 
 (struct room
@@ -85,7 +85,7 @@
    extension-points) ; where a corridor could sprout
   #:mutable)
 
-(define (room-with/c height/c
+(define/ctc-helper (room-with/c height/c
                      width/c
                      poss->cells/c
                      free-cells/c
@@ -101,12 +101,12 @@
                    free-cells/c)
             (and/c (listof array-coord?)
                    extension-points/c)))
-(define any-room? (room-with/c any/c any/c any/c any/c any/c))
+(define/ctc-helper any-room? (room-with/c any/c any/c any/c any/c any/c))
 
 
 ;; -----------------------------------------------------------------------------
 
-(define N 1)
+(define/contract N exact-nonnegative-integer? 1)
 
 (define/contract wall-cache
   (configurable-ctc
@@ -120,14 +120,14 @@
    [types hash?])
   (make-hash))
 
-(define animate-generation? #f) ; to see intermediate steps
-(define ITERS 10)
-(define dungeon-height 18) ; to be easy to display in 80x24, with other stuff
-(define dungeon-width  60)
+(define/contract animate-generation? boolean? #f) ; to see intermediate steps
+(define/contract ITERS exact-nonnegative-integer? 10)
+(define/contract dungeon-height exact-nonnegative-integer? 18) ; to be easy to display in 80x24, with other stuff
+(define/contract dungeon-width  exact-nonnegative-integer? 60)
 
 ;; -----------------------------------------------------------------------------
 
-(define (room-bounds x y height width direction
+(define/ctc-helper (room-bounds x y height width direction
                      [dimension-randomizer identity])
   (define min-x (match direction
                   [(== down) x]
@@ -148,7 +148,7 @@
   (values min-x max-x
           min-y max-y))
 
-(define ((coord-within-box/c start-pos height width direction) cell-coord)
+(define/ctc-helper ((coord-within-box/c start-pos height width direction) cell-coord)
   (match-define (vector start-x start-y) start-pos)
   (match-define (vector cell-x cell-y) cell-coord)
   (define-values (min-x max-x min-y max-y)
@@ -176,7 +176,7 @@
                                                            height
                                                            width
                                                            direction))
-                                cell%?)
+                                cell%/c)
                        ;; ll: I don't think these can (reasonably) be
                        ;; refined (note that they still have the default
                        ;; room contract, see definition of room-with/c)
@@ -188,8 +188,21 @@
 
   ;; height and width include a wall of one cell wide on each side
   (match-define (vector x y) pos)
-  (define-values (min-x max-x min-y max-y)
-    (room-bounds x y height width direction random))
+  (define min-x (match direction
+                  [(== down) x]
+                  ;; expanding north, we have to move the top of the room
+                  ;; up so the bottom reaches the starting point
+                  [(== up) (+ (- x height) 1)]
+                  ;; have the entrance be at a random position on the
+                  ;; entrance-side wall
+                  [else    (sub1 (- x (random (- height 2))))]))
+  (define min-y (match direction
+                  ;; same idea as for x
+                  [(== right) y]
+                  [(== left)  (+ (- y width) 1)]
+                  [else       (sub1 (- y (random (- width 2))))]))
+  (define max-x (+ min-x height))
+  (define max-y (+ min-y width))
   (define-values (success? poss->cells free-cells extension-points)
     (for*/fold
                ([success?         #t]
@@ -332,7 +345,7 @@
                                                            11
                                                            11
                                                            dir))
-                                cell%?)
+                                cell%/c)
                        any/c
                        any/c))])]
    [types (grid? array-coord? direction? . -> . (or-#f/c any-room?))])
@@ -380,7 +393,7 @@
   (try-add-rectangle grid pos h w dir))
 
 
-(define (door-count grid)
+(define/ctc-helper (door-count grid)
   (define height (grid-height grid))
   (define width (grid-width grid))
   (for/fold ([doors 0])
@@ -390,10 +403,10 @@
        (vector-count (curry is-a? door%)
                      (vector-ref grid row-index)))))
 
-(define (room-count grid)
+(define/ctc-helper (room-count grid)
   (/ (door-count grid) 4))
 
-(define ((room-count>=/c n) grid)
+(define/ctc-helper ((room-count>=/c n) grid)
   (>= (room-count grid) n))
 
 ;; ll: temporal: this should display things IF `animate-generation?`
@@ -556,7 +569,8 @@
          (hash-set! free-cache pos res)
          res]))
 
-(define (hash-clear! h)
+(define/contract (hash-clear! h)
+  any/c
   (void))
 
 ;; wall smoothing, for aesthetic reasons
@@ -657,9 +671,10 @@
         [(_ _ _ _) (raise-user-error 'voidcase)])))))
 
 
-(define LOOPS 100)
+(define/contract LOOPS exact-nonnegative-integer? 1)
 
-(define (main)
+(define/contract (main)
+  any/c
   (for ((_i (in-range LOOPS)))
     (show-grid (smooth-walls (generate-dungeon (range N))))
     (reset!)))

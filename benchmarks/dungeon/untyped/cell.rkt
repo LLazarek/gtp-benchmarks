@@ -38,7 +38,7 @@
 
 ;; =============================================================================
 
-(define-syntax-rule (make-cell%/c-with self-id show-char
+(define-syntax-rule/ctc-helper (make-cell%/c-with self-id show-char
                                        free?/occupant-comparer)
   (class/c* (field/all [items list?]     ;; ll: never seems to
                        [occupant any/c]) ;; actually be used
@@ -59,8 +59,8 @@
                                        (get-field occupant
                                                   self-id))])]))
 
-(define cell%/c (make-cell%/c-with self any/c (λ x #t)))
-(define cell%? (instanceof/c cell%/c))
+(define/ctc-helper cell%/c (make-cell%/c-with self any/c (λ x #t)))
+(define/ctc-helper cell%? (instanceof/c cell%/c))
 
 (define/contract cell% ; some kind of obstacle by default
   (configurable-ctc
@@ -90,7 +90,7 @@
 
 ;; Workaround for bug(?) in class comparison:
 ;; (subclass? cell% (dict-ref chars->cell%s #\*)) => #f
-(define (class-equal? a% b%)
+(define/ctc-helper (class-equal? a% b%)
   (and (subclass? a% b%)
        (subclass? b% a%)))
 
@@ -158,7 +158,7 @@
     (super-new)))
 (register-cell-type! wall% #\X)
 
-(define double-bar? #t)
+(define/contract double-bar? boolean? #t)
 (define-syntax-rule (define-wall name single-bar double-bar)
   (begin (define/contract name
            (configurable-ctc
