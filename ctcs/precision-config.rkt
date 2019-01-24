@@ -14,7 +14,7 @@
          define-syntax-rule/ctc-helper
          define-syntax/ctc-helper)
 
-(define-for-syntax precision-configs '(none types max))
+(define-for-syntax precision-configs '(none types max/sub1 max))
 ;; Must be a member of ^; modify to change all configurable-ctc precision levels
 (define-for-syntax current-precision-config 'max)
 
